@@ -1,32 +1,26 @@
 #!/usr/bin/python36
 # -*- coding: utf-8 -*-
 
+from tempfile import mkdtemp
 from subprocess import Popen
-from random import choice
 import subprocess
-import string
 
 TARGETS = list()
 OPENSSL = '/usr/bin/openssl'
+CERTBOT = '/usr/bin/certbot'
 
 
-class LetsEncrypt:
+class CertRenew:
 
-    def __init__(self):
-        pass
-
-    def build_path(self):
-        rand_len = 8
-        rand_src = string.ascii_letters + string.digits
-        self.rand_path = ''.join(choice(rand_src) for i in range(rand_len))
-        self.privkey = '/tmp/{}/privkey.pem'.format(self.rand_path)
-        self.csr = '/tmp/{}/csr.der'.format(self.rand_path)
-
-    def __check_file_exist(self, target: str):
-        pass
+    def __init__(self, domainname: str):
+        self.domainname = domainname
+        tmpdir_prefix = 'le_{}_'.format(domainname)
+        self.tmpdir = mkdtemp(prefix=tmpdir_prefix)
+        self.privkey = '{}/privkey.pem'.format(self.tmpdir)
+        self.csr = '{}/csr.der'.format(self.tmpdir)
+        self.server = 'https://acme-v01.api.letsencrypt.org/directory'
 
     def make_privkey(self):
-        # XXX check file existency
         cmd = ' '.join([
             OPENSSL,
             'ecparam',
@@ -35,26 +29,30 @@ class LetsEncrypt:
         ])
         subprocess.call(cmd, shell=True)
 
-    def make_csr(self, target_path: str):
-        infile = ''
+    def make_csr(self):
         cmd = ' '.join([
             OPENSSL,
             'req',
             '-new',
-            '-key {}',format(self.privkey),
-            '-sha256 -nodes -outform der',
+            '-key {}'.format(self.privkey),
+            '-sha256 -nodes',
+            '-outform der',
             '-out {}'.format(self.csr),
-            '-in {}'.format(infile),
-            '-subj "/CN={}'.format(''),
-            '-reqexts SAN -config',
+            '-subj "/CN={}/C=JP"'.format(self.domainname),
         ])
         subprocess.call(cmd, shell=True)
 
-# for target in TARGETS
-#     target_path = '{}_{}'.format(target, get_temp_file())
-#     make_privkey(target_path)
+    def run_certbot(self):
+        cmd = ' '.join([
+            CERTBOT,
+            'certonly -t -a webroot',
+            '--webroot-map {}'.format(''),
+            '--redirect',
+            '--csr {}'.format(self.csr),
+            '--server {}'.format(self.server),
+        ])
+        subprocess.call(cmd, shell=True)
 
-#     csr_file = '/etc/letsencrypt/der_keys/$HOSTNAME/csr.der'
-#     arg = 
 
-#     Popen()
+for target in TARGETS:
+    CertRenew(target)
