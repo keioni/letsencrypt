@@ -1,16 +1,22 @@
 #!/usr/bin/python36
 # -*- coding: utf-8 -*-
 
+import logging
+import os
+import sys
+import re
 from tempfile import mkdtemp
 from subprocess import Popen
 import subprocess
 
-TARGETS = list()
+
+logger = logging.getLogger(__name__)
 
 
 class CertRenew:
     OPENSSL = '/usr/bin/openssl'
     CERTBOT = '/usr/bin/certbot'
+    WEBROOT = '/home/keys/$DOMAINNAME'
     # ACME_SERVER = 'https://acme-v01.api.letsencrypt.org/directory'
 
     def __init__(self, domainname: str):
@@ -63,18 +69,35 @@ subjectAltName=DNS:{}
             '--csr {}'.format(self.csr),
             # '--server {}'.format(self.server),
         ])
-        
+
         subprocess.call(cmd, shell=True)
 
     def install_certs(self):
         pass
-        
 
-# for target in TARGETS:
-#     CertRenew(target)
 
-le = CertRenew('keys.jp')
-print('privkey: {}').format(le.privkey)
-le.make_privkey()
-print('csr: {}').format(le.csr)
-le.make_csr()
+def get_target() -> list:
+    TARGETS = '/etc/httpd/conf.d/vhost_*.conf'
+    logger.debug('arguments({}): {}'.format(len(sys.argv), ', '.join(sys.argv)))
+    if len(sys.argv) < 3:
+        logger.debug('get from target lists: {}'.format(TARGETS))
+        domains = list() # XXX
+    else:
+        logger.debug('get from command line argument(s).')
+        domains = sys.argv[2:]
+    logger.debug('targets: ' + ', '.join(domains))
+    return domains
+
+def main():
+    logger.debug('staring program')
+    targets = get_target()
+    for domain in targets:
+        logger.info('run for: {}'.format(domain))
+        le = CertRenew(domain)
+        logger.info('privkey: {}'.format(le.privkey))
+        le.make_privkey()
+        logger.info('csr: {}'.format(le.csr))
+        le.make_csr()
+
+
+main()
