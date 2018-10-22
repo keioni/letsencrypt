@@ -10,6 +10,7 @@ from subprocess import Popen
 import subprocess
 
 
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
 
