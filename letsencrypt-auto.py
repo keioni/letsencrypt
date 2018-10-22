@@ -79,26 +79,27 @@ subjectAltName=DNS:{}
 
 def get_target() -> list:
     TARGETS = '/etc/httpd/conf.d/vhost_*.conf'
-    logger.debug('arguments({}): {}'.format(len(sys.argv), ', '.join(sys.argv)))
+    logger.debug('arguments(%s): %s', len(sys.argv), ', '.join(sys.argv))
     if len(sys.argv) < 3:
-        logger.debug('get from target lists: {}'.format(TARGETS))
+        logger.debug('get from target lists: %s', TARGETS)
         domains = list() # XXX
     else:
         logger.debug('get from command line argument(s).')
         domains = sys.argv[2:]
-    logger.debug('targets: ' + ', '.join(domains))
+    logger.debug('targets: %s', ', '.join(domains))
     return domains
 
 def main():
     logger.debug('staring program')
     targets = get_target()
     for domain in targets:
-        logger.info('run for: {}'.format(domain))
+        logger.info('run for: %s', domain)
         le = CertRenew(domain)
-        logger.info('privkey: {}'.format(le.privkey))
+        logger.info('privkey: %s', le.privkey)
         le.make_privkey()
-        logger.info('csr: {}'.format(le.csr))
+        logger.info('csr: %s', le.csr)
         le.make_csr()
 
 
-main()
+if __name__ == "__main__":
+    main()
