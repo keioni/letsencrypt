@@ -77,7 +77,7 @@ subjectAltName=DNS:{}
         pass
 
 
-def get_target() -> list:
+def get_targets() -> list:
     TARGETS = '/etc/httpd/conf.d/vhost_*.conf'
     logger.debug('arguments(%s): %s', len(sys.argv), ', '.join(sys.argv))
     if len(sys.argv) < 3:
@@ -91,7 +91,7 @@ def get_target() -> list:
 
 def main():
     logger.debug('staring program')
-    targets = get_target()
+    targets = get_targets()
     for domain in targets:
         logger.info('run for: %s', domain)
         le = CertRenew(domain)
